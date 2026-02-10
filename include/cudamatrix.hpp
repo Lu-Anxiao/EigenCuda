@@ -3,8 +3,8 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <cublas_v2.h>
-#include <curand.h>
+#include <mublas.h>
+#include <murand.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -19,7 +19,7 @@
 
 namespace eigencuda {
 
-cudaError_t checkCuda(cudaError_t result);
+musaError_t checkCuda(musaError_t result);
 
 using Index = Eigen::Index;
 Index count_available_gpus();
@@ -31,10 +31,10 @@ class CudaMatrix {
   Index cols() const { return _cols; };
   double *data() const { return _data.get(); };
 
-  CudaMatrix(const Eigen::MatrixXd &matrix, const cudaStream_t &stream);
+  CudaMatrix(const Eigen::MatrixXd &matrix, const musaStream_t &stream);
 
   // Allocate memory in the GPU for a matrix
-  CudaMatrix(Index nrows, Index ncols, const cudaStream_t &stream);
+  CudaMatrix(Index nrows, Index ncols, const musaStream_t &stream);
 
   // Convert A Cudamatrix to an EigenMatrix
   operator Eigen::MatrixXd() const;
@@ -53,8 +53,8 @@ class CudaMatrix {
 
   // Attributes of the matrix in the device
   Unique_ptr_to_GPU_data _data{nullptr,
-                               [](double *x) { checkCuda(cudaFree(x)); }};
-  cudaStream_t _stream = nullptr;
+                               [](double *x) { checkCuda(musaFree(x)); }};
+  musaStream_t _stream = nullptr;
   Index _rows;
   Index _cols;
 };

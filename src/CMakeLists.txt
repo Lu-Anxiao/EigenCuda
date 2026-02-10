@@ -4,7 +4,7 @@ add_library(eigencuda cudamatrix.cc cudapipeline.cc)
 target_include_directories(eigencuda
   PUBLIC
   ${PROJECT_SOURCE_DIR}/include
-  ${CUDA_INCLUDE_DIRS}
+  ${MUSA_INCLUDE_DIRS}
 )
 
 set_target_properties(eigencuda
@@ -21,8 +21,8 @@ target_compile_options(eigencuda
 target_link_libraries(eigencuda
   PUBLIC
     Eigen3::Eigen
-    ${CUDA_LIBRARIES}
-    ${CUDA_CUBLAS_LIBRARIES}
+    ${MUSA_LIBRARIES}
+    ${MUSA_MUBLAS_LIBRARIES}
   )
 
 if(ENABLE_TESTING)

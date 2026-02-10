@@ -20,8 +20,8 @@ namespace eigencuda {
 class CudaPipeline {
  public:
   CudaPipeline() {
-    cublasCreate(&_handle);
-    cudaStreamCreate(&_stream);
+    mublasCreate(&_handle);
+    musaStreamCreate(&_stream);
   }
   ~CudaPipeline();
 
@@ -31,14 +31,14 @@ class CudaPipeline {
   // Invoke the ?gemm function of cublas
   void gemm(const CudaMatrix &A, const CudaMatrix &B, CudaMatrix &C) const;
 
-  const cudaStream_t &get_stream() const { return _stream; };
+  const musaStream_t &get_stream() const { return _stream; };
 
  private:
   // The cublas handles allocates hardware resources on the host and device.
-  cublasHandle_t _handle;
+  mublasHandle_t _handle;
 
   // Asynchronous stream
-  cudaStream_t _stream;
+  musaStream_t _stream;
 };
 
 }  // namespace eigencuda

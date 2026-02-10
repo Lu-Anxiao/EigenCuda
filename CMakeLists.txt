@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.5)
 # Project's name
 project(EigenCuda LANGUAGES CXX)
 
+list(APPEND CMAKE_MODULE_PATH /usr/local/musa/cmake)
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CXX_FLAGS)
   #release comes with -O3 by default
   set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -18,7 +20,7 @@ if(ENABLE_TESTING)
 endif(ENABLE_TESTING)
 
 # Search for Cuda
-find_package(CUDA REQUIRED)
+find_package(MUSA REQUIRED)
 
 # search for Eigen
 find_package (Eigen3 3.3 REQUIRED CONFIG

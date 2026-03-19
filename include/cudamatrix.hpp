@@ -3,8 +3,14 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#ifdef FORCE_MUSA
+#include <musa_runtime.h>
+#include <mublas.h>
+#include <musa.h>
+#else
 #include <cublas_v2.h>
 #include <curand.h>
+#endif
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -19,7 +25,11 @@
 
 namespace eigencuda {
 
+#ifdef FORCE_MUSA
+musaError_t checkMusa(musaError_t result);
+#else
 cudaError_t checkCuda(cudaError_t result);
+#endif
 
 using Index = Eigen::Index;
 Index count_available_gpus();
@@ -31,10 +41,22 @@ class CudaMatrix {
   Index cols() const { return _cols; };
   double *data() const { return _data.get(); };
 
-  CudaMatrix(const Eigen::MatrixXd &matrix, const cudaStream_t &stream);
+  CudaMatrix(const Eigen::MatrixXd &matrix, 
+#ifdef FORCE_MUSA
+             const musaStream_t &stream
+#else
+             const cudaStream_t &stream
+#endif
+             );
 
   // Allocate memory in the GPU for a matrix
-  CudaMatrix(Index nrows, Index ncols, const cudaStream_t &stream);
+  CudaMatrix(Index nrows, Index ncols, 
+#ifdef FORCE_MUSA
+             const musaStream_t &stream
+#else
+             const cudaStream_t &stream
+#endif
+             );
 
   // Convert A Cudamatrix to an EigenMatrix
   operator Eigen::MatrixXd() const;
@@ -53,8 +75,17 @@ class CudaMatrix {
 
   // Attributes of the matrix in the device
   Unique_ptr_to_GPU_data _data{nullptr,
-                               [](double *x) { checkCuda(cudaFree(x)); }};
+#ifdef FORCE_MUSA
+                               [](double *x) { checkMusa(musaFree(x)); }
+#else
+                               [](double *x) { checkCuda(cudaFree(x)); }
+#endif
+                               };
+#ifdef FORCE_MUSA
+  musaStream_t _stream = nullptr;
+#else
   cudaStream_t _stream = nullptr;
+#endif
   Index _rows;
   Index _cols;
 };

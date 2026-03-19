@@ -1,13 +1,24 @@
 
 #include "cudapipeline.hpp"
+#ifdef FORCE_MUSA
+#include <mublas.h>
+#else
+#include <cublas_v2.h>
+#endif
 
 namespace eigencuda {
   CudaPipeline::~CudaPipeline() {
 
   // destroy handle
+#ifdef FORCE_MUSA
+  mublasDestroy(_handle);
+  // destroy stream
+  musaStreamDestroy(_stream);
+#else
   cublasDestroy(_handle);
   // destroy stream
   cudaStreamDestroy(_stream);
+#endif
 }
 
 /*
@@ -24,11 +35,17 @@ void CudaPipeline::gemm(const CudaMatrix &A, const CudaMatrix &B,
   const double *pbeta = &beta;
 
   if ((A.cols() != B.rows())) {
-    throw std::runtime_error("Shape mismatch in Cublas gemm");
+    throw std::runtime_error("Shape mismatch in Cublas/Musblas gemm");
   }
+#ifdef FORCE_MUSA
+  mublasDgemm(_handle, MUBLAS_OP_N, MUBLAS_OP_N, int(A.rows()), int(B.cols()),
+               int(A.cols()), palpha, A.data(), int(A.rows()), B.data(),
+               int(B.rows()), pbeta, C.data(), int(C.rows()));
+#else
   cublasDgemm(_handle, CUBLAS_OP_N, CUBLAS_OP_N, int(A.rows()), int(B.cols()),
               int(A.cols()), palpha, A.data(), int(A.rows()), B.data(),
               int(B.rows()), pbeta, C.data(), int(C.rows()));
+#endif
 }
 
 }  // namespace eigencuda

@@ -2,6 +2,9 @@
 #define CUDA_PIPELINE__H
 
 #include "cudamatrix.hpp"
+#ifdef FORCE_MUSA
+#include <mublas.h>
+#endif
 
 /*
  * \brief Perform Tensor-matrix multiplications in a GPU
@@ -20,8 +23,13 @@ namespace eigencuda {
 class CudaPipeline {
  public:
   CudaPipeline() {
+#ifdef FORCE_MUSA
+    mublasCreate(&_handle);
+    musaStreamCreate(&_stream);
+#else
     cublasCreate(&_handle);
     cudaStreamCreate(&_stream);
+#endif
   }
   ~CudaPipeline();
 
@@ -31,14 +39,23 @@ class CudaPipeline {
   // Invoke the ?gemm function of cublas
   void gemm(const CudaMatrix &A, const CudaMatrix &B, CudaMatrix &C) const;
 
-  const cudaStream_t &get_stream() const { return _stream; };
+  const 
+#ifdef FORCE_MUSA
+  musaStream_t
+#else
+  cudaStream_t
+#endif
+  &get_stream() const { return _stream; };
 
  private:
-  // The cublas handles allocates hardware resources on the host and device.
+  // The BLAS handles allocates hardware resources on the host and device.
+#ifdef FORCE_MUSA
+  mublasHandle_t _handle;
+  musaStream_t _stream;
+#else
   cublasHandle_t _handle;
-
-  // Asynchronous stream
   cudaStream_t _stream;
+#endif
 };
 
 }  // namespace eigencuda
